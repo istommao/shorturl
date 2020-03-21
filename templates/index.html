@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+<head>
+    <meta charset="UTF-8">
+    <title>short url</title>
+    <link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui/css/layui.css">
+    <style>
+        #main {
+            width: 580px;
+            margin: 100px auto;
+            text-align: center;
+        }
+
+        #resultCode {
+            margin: 20px 0;
+        }
+        #copyBtn {
+            margin-top: 10px;
+        }
+        .layui-form {
+            margin-top: 20px;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <div id="main">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">原链接</label>
+                <div class="layui-input-block">
+                    <input type="text" name="title" id="inputBox" lay-verify="title" autocomplete="off" placeholder="请输入URL Enter键生成短链" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">短链接</label>
+                <div class="layui-input-block">
+                    <input type="text" id="resultCode" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button type="button" id="copyBtn" class="layui-btn layui-btn-normal">复制</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript" src="https://www.layuicdn.com/layui/layui.js"></script>
+    <script>
+    layui.use(['layer'], function() {
+        var $ = layui.jquery;
+
+
+        function copyUrl() {
+            var Url2 = document.getElementById("resultCode");
+            Url2.select();
+            document.execCommand("Copy");
+        }
+        $('#copyBtn').click(function(event) {
+            copyUrl()
+        })
+
+
+        var getShortCode = function(url) {
+            var apiURL = '/g/';
+            $.ajax({
+                type: 'POST',
+                data: JSON.stringify({ 'url': url }),
+                url: apiURL,
+                success: function(data) {
+                    var fullUrl = document.location.origin + '/a/' + data.code
+                    $('#resultCode').val(fullUrl)
+                }
+            });
+        }
+
+        $('#inputBox').keyup(function(event) {
+            var url = $(this).val();
+            if (event.keyCode == 13 && url != '') {
+                getShortCode(url)
+            }
+        })
+    });
+    </script>
+</body>
+
+</html>
