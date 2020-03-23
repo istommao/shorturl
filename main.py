@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 import aioredis
-import mmh3
+import xxhash_cffi
 
 app = FastAPI()
 
@@ -17,53 +17,19 @@ REDIS_CONFIG = ('127.0.0.1', 6379)
 ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
-class Item(BaseModel):
-    url: str
-
-
-def base62_encode(num, alphabet=ALPHABET):
-    """Encode a number in Base X
-
-    `num`: The number to encode
-    `alphabet`: The alphabet to use for encoding
-    """
-    if (num == 0):
-        return alphabet[0]
-    arr = []
-    base = len(alphabet)
-    while num:
-        rem = num % base
-        num = num // base
-        arr.append(alphabet[rem])
-    arr.reverse()
-    return ''.join(arr)
-
-
-def base62_decode(string, alphabet=ALPHABET):
-    """Decode a Base X encoded string into the number
-
-    Arguments:
-    - `string`: The encoded string
-    - `alphabet`: The alphabet to use for encoding
-    """
-    base = len(alphabet)
-    strlen = len(string)
-    num = 0
-
-    idx = 0
-    for char in string:
-        power = (strlen - (idx + 1))
-        num += alphabet.index(char) * (base ** power)
-        idx += 1
-
-    return num
+def base62_encode(dec):
+    return ALPHABET[dec] if dec < 62 else base62_encode(dec // 62) + ALPHABET[dec % 62]
 
 
 def get_short_url_code(url):
-    hash_num = mmh3.hash(url)
-    code = base62_encode(abs(hash_num))
+    hash_num = xxhash_cffi.xxh32_intdigest(url)
+    code = base62_encode(hash_num)
 
     return code
+
+
+class Item(BaseModel):
+    url: str
 
 
 class Redis:
