@@ -46,13 +46,16 @@
                     <button type="button" id="copyBtn" class="layui-btn layui-btn-normal">复制</button>
                 </div>
             </div>
+            <div id="qrcode"></div>
         </form>
     </div>
     <script type="text/javascript" src="https://www.layuicdn.com/layui/layui.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <script>
+
     layui.use(['layer'], function() {
         var $ = layui.jquery;
-
+        var qrcode = new QRCode(document.getElementById('qrcode'));
 
         function copyUrl() {
             var Url2 = document.getElementById("resultCode");
@@ -73,6 +76,9 @@
                 success: function(data) {
                     var fullUrl = document.location.origin + '/a/' + data.code
                     $('#resultCode').val(fullUrl)
+
+                    qrcode.clear();
+                    qrcode.makeCode(fullUrl)
                 }
             });
         }
