@@ -66,12 +66,20 @@ async def set_value(key, value, expire=None):
 
 templates = Jinja2Templates(directory='templates')
 
+from starlette.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 @app.get('/')
 async def index_page(request: Request):
     template_name = 'index.html'
     return templates.TemplateResponse(template_name, {'request': request})
-
 
 
 @app.post('/g/')
