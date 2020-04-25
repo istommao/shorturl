@@ -3,7 +3,7 @@
         <el-container>
             <el-header>
                 <el-card :body-style="{ padding: '0px' }">
-                    <el-input  ref="inputRef" v-model="rawUrl" @keyup.enter.native="doshortUrl" @blur="doshortUrl" placeholder="输入链接并按下 Enter 回车键"></el-input>
+                    <el-input ref="inputRef" v-model="rawUrl" @keyup.enter.native="doshortUrl" @blur="doshortUrl" placeholder="输入链接并按下 Enter 回车键"></el-input>
                 </el-card>
             </el-header>
             <el-main>
@@ -11,7 +11,6 @@
                     <el-col :span="10" :xs="24" :lg="6">
                         <div class="grid-content">
                             <el-card :body-style="{height: '235px' }">
-                                <!-- <img src="" class="image"> -->
                                 <div id="qrcode" ref="qrCodeUrl">
                                     <div id="qrcodeImg"></div>
                                 </div>
@@ -28,6 +27,17 @@
                             </el-card>
                         </div>
                     </el-col>
+                    <el-col :span="14" :xs="24" :lg="18">
+                        <div class="grid-content">
+                            <el-card :body-style="{ padding: '5px', margin: '5px' }">
+                                <el-form label-width="80px">
+                                    <el-form-item v-for="(value, key) in urlparams" :key="key" :label="key">
+                                        <div>{{ value }}</div>
+                                    </el-form-item>
+                                </el-form>
+                            </el-card>
+                        </div>
+                    </el-col>
                 </el-row>
             </el-main>
         </el-container>
@@ -36,16 +46,40 @@
 <script>
 import QRCode from 'qrcodejs2'
 
-console.log(process.env)
-
 export default {
     name: 'App',
     mounted() {
         this.$refs.inputRef.$el.children[0].focus();
     },
     methods: {
+        parseUrl(url) {
+            // var result = [];
+            // var query = url.split("?")[1];
+            // var queryArr = query.split("&");
+            // queryArr.forEach(function(item) {
+            //     var obj = {};
+            //     var value = item.split("=")[1];
+            //     var key = item.split("=")[0];
+            //     obj.key = key;
+            //     obj.value = value;
+            //     result.push(obj);
+            // });
+            // return result;
+
+            var obj = {};
+            var keyvalue = [];
+            var key = "",
+                value = "";
+            var paraString = url.substring(url.indexOf("?") + 1, url.length).split("&");
+            for (var i in paraString) {
+                keyvalue = paraString[i].split("=");
+                key = keyvalue[0];
+                value = keyvalue[1];
+                obj[key] = value;
+            }
+            return obj;
+        },
         doshortUrl() {
-            console.log(this.$http.defaults)
             var baseURL = this.$http.defaults.baseAPIURL;
             if (this.rawUrl != '') {
                 this.$http.post(baseURL + '/g/', {
@@ -53,7 +87,11 @@ export default {
                 }).then(resp => {
                     this.shortUrl = baseURL + '/a/' + resp.data.code;
                     this.createQrcode(this.shortUrl);
+
+                    this.urlparams = this.parseUrl(this.rawUrl);
                 })
+            } else {
+                this.urlparams = null;
             }
         },
         createQrcode(text) {
@@ -76,6 +114,7 @@ export default {
     },
     data() {
         return {
+            urlparams: null,
             rawUrl: '',
             shortUrl: ''
         }
